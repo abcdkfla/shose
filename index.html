@@ -38,17 +38,22 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 16px;
     }
     label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: #374151; }
-    input[type="text"], input[type="password"], select {
+    input[type="text"], input[type="password"], input[type="number"], select {
       width: 100%; padding: 14px 12px; border: 1.5px solid var(--border);
       border-radius: 10px; font-size: 1rem; margin-bottom: 16px; background: #fafafa;
     }
     input:focus, select:focus { outline: none; border-color: #3b82f6; background: white; }
+    .search-box {
+      width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+      border-radius: 10px; font-size: 1rem; margin-bottom: 14px; background: white;
+    }
     .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:active { opacity: 0.85; }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-danger { background: var(--red); color: white; }
     .btn-recover { background: var(--orange); color: white; font-size: 0.85rem; padding: 8px 12px; width: auto; }
+    .btn-edit { background: #3b82f6; color: white; font-size: 0.85rem; padding: 8px 12px; width: auto; }
     .btn-sm { padding: 8px 12px; font-size: 0.85rem; width: auto; border-radius: 8px; }
     .filter-row { display: flex; gap: 6px; margin-bottom: 14px; }
     .filter-btn {
@@ -64,7 +69,7 @@
     .order-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--green); flex-shrink: 0; }
     .order-info { flex: 1; min-width: 0; }
     .order-name { font-weight: 700; font-size: 1rem; }
-    .order-meta { font-size: 0.8rem; color: var(--gray); margin-top: 2px; }
+    .order-meta { font-size: 0.85rem; color: var(--gray); margin-top: 2px; }
     .badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 20px; font-weight: 600; flex-shrink: 0; }
     .badge.paid { background: #dcfce7; color: #166534; }
     .badge.unpaid { background: #fee2e2; color: #991b1b; }
@@ -95,7 +100,7 @@
       max-width: 340px; width: 100%; text-align: center;
     }
     .modal h3 { font-size: 1.1rem; margin-bottom: 8px; }
-    .modal p { color: var(--gray); font-size: 0.9rem; margin-bottom: 20px; }
+    .modal p { color: var(--gray); font-size: 0.9rem; margin-bottom: 16px; }
     .modal-btns { display: flex; gap: 10px; }
     .modal-btns button {
       flex: 1; padding: 12px; border: none; border-radius: 10px;
@@ -103,9 +108,11 @@
     }
     .modal-cancel { background: #e5e7eb; color: #374151; }
     .modal-confirm { background: var(--red); color: white; }
-    .config-warn {
-      background: #fef3c7; border: 1px solid #f59e0b; color: #92400e;
-      padding: 12px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px;
+    .modal-confirm.blue { background: #3b82f6; }
+    .admin-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .size-edit-input {
+      width: 90px; padding: 8px; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 0.95rem; text-align: center;
     }
   </style>
 </head>
@@ -119,16 +126,13 @@
   <div class="container">
     <h1>👟 신발 주문서</h1>
 
-    <div id="configWarn" class="config-warn hidden">
-      ⚠️ Supabase URL / Key가 설정되지 않았습니다.
-    </div>
-
     <div class="tabs">
       <button type="button" class="tab active" id="tabBtn-order" onclick="showTab('order')">📝 주문하기</button>
       <button type="button" class="tab" id="tabBtn-list" onclick="showTab('list')">📋 주문목록</button>
       <button type="button" class="tab" id="tabBtn-admin" onclick="showTab('admin')">🔐 관리자</button>
     </div>
 
+    <!-- 주문하기 -->
     <div id="tab-order">
       <div class="card">
         <label for="name">이름</label>
@@ -139,16 +143,14 @@
       </div>
     </div>
 
+    <!-- 주문목록 (공개: 이름+사이즈만, 검색) -->
     <div id="tab-list" class="hidden">
-      <div class="filter-row">
-        <button type="button" class="filter-btn active" onclick="setFilter('all', this)">전체</button>
-        <button type="button" class="filter-btn" onclick="setFilter('paid', this)">입금완료</button>
-        <button type="button" class="filter-btn" onclick="setFilter('unpaid', this)">미입금</button>
-      </div>
+      <input type="text" class="search-box" id="listSearch" placeholder="이름으로 검색..." oninput="renderList()" />
       <div class="card" id="orderList"></div>
       <div class="stats" id="stats"></div>
     </div>
 
+    <!-- 관리자 -->
     <div id="tab-admin" class="hidden">
       <div class="card login-box" id="adminLogin">
         <p>관리자만 접근할 수 있습니다</p>
@@ -156,21 +158,29 @@
         <input type="password" id="adminPw" placeholder="비밀번호 입력" />
         <button type="button" class="btn btn-primary" onclick="adminLogin()">로그인</button>
       </div>
+
       <div id="adminPanel" class="hidden">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
           <strong>관리자 모드</strong>
           <button type="button" class="btn btn-sm" style="background:#e5e7eb; color:#374151;" onclick="adminLogout()">로그아웃</button>
         </div>
+
         <div class="filter-row">
-          <button type="button" class="filter-btn active" id="adminFilter-active" onclick="setAdminFilter('active', this)">주문 목록</button>
-          <button type="button" class="filter-btn" id="adminFilter-trash" onclick="setAdminFilter('trash', this)">휴지통</button>
+          <button type="button" class="filter-btn active" id="adminFilter-all" onclick="setAdminView('all', this)">전체</button>
+          <button type="button" class="filter-btn" id="adminFilter-paid" onclick="setAdminView('paid', this)">입금완료</button>
+          <button type="button" class="filter-btn" id="adminFilter-unpaid" onclick="setAdminView('unpaid', this)">미입금</button>
+          <button type="button" class="filter-btn" id="adminFilter-trash" onclick="setAdminView('trash', this)">휴지통</button>
         </div>
+
+        <input type="text" class="search-box" id="adminSearch" placeholder="이름으로 검색..." oninput="renderAdminList()" />
+
         <div class="card" id="adminList"></div>
         <div class="stats" id="adminStats"></div>
       </div>
     </div>
   </div>
 
+  <!-- 삭제 확인 -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal">
       <h3>정말 삭제할까요?</h3>
@@ -178,6 +188,20 @@
       <div class="modal-btns">
         <button type="button" class="modal-cancel" onclick="closeModal()">취소</button>
         <button type="button" class="modal-confirm" id="confirmDeleteBtn">삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사이즈 수정 -->
+  <div class="modal-overlay" id="editSizeModal">
+    <div class="modal">
+      <h3>사이즈 수정</h3>
+      <p id="editSizeName"></p>
+      <label for="editSizeSelect">새 사이즈 (mm)</label>
+      <select id="editSizeSelect" class="size-edit-input" style="width:100%; margin-bottom:16px;"></select>
+      <div class="modal-btns">
+        <button type="button" class="modal-cancel" onclick="closeEditModal()">취소</button>
+        <button type="button" class="modal-confirm blue" onclick="saveSizeEdit()">저장</button>
       </div>
     </div>
   </div>
@@ -196,16 +220,13 @@
     const ADMIN_SESSION = "shoe_admin_logged_in";
 
     let supabaseClient = null;
-    let currentFilter = "all";
-    let adminFilter = "active";
+    let adminView = "all";
     let pendingDeleteId = null;
+    let pendingEditId = null;
 
     function initSupabase() {
       try {
-        if (!window.supabase || !window.supabase.createClient) {
-          console.error("supabase js not loaded");
-          return false;
-        }
+        if (!window.supabase || !window.supabase.createClient) return false;
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         return true;
       } catch (e) {
@@ -215,34 +236,38 @@
     }
 
     function escapeHtml(text) {
-      const div = document.createElement("div");
+      var div = document.createElement("div");
       div.textContent = text;
       return div.innerHTML;
     }
 
     function showToast(msg, isError) {
-      const toast = document.getElementById("toast");
+      var toast = document.getElementById("toast");
       toast.textContent = msg;
       toast.classList.toggle("error", !!isError);
       toast.classList.add("show");
       setTimeout(function () { toast.classList.remove("show"); }, 2200);
     }
 
-    function formatTime(iso) {
-      if (!iso) return "";
-      try { return new Date(iso).toLocaleString("ko-KR"); } catch (e) { return iso; }
+    function sortByKoreanName(arr) {
+      return arr.slice().sort(function (a, b) {
+        return (a.name || "").localeCompare(b.name || "", "ko-KR");
+      });
     }
 
-    function initSizeSelect() {
-      const select = document.getElementById("size");
-      select.innerHTML = "";
+    function fillSizeSelect(selectEl, selected) {
+      selectEl.innerHTML = "";
       for (var s = SIZE_MIN; s <= SIZE_MAX; s += SIZE_STEP) {
         var opt = document.createElement("option");
         opt.value = s;
         opt.textContent = s;
-        if (s === 250) opt.selected = true;
-        select.appendChild(opt);
+        if (s === selected) opt.selected = true;
+        selectEl.appendChild(opt);
       }
+    }
+
+    function initSizeSelect() {
+      fillSizeSelect(document.getElementById("size"), 250);
     }
 
     function showTab(tab) {
@@ -288,7 +313,6 @@
       btn.disabled = false;
       btn.textContent = "주문 제출하기";
       if (result.error) {
-        console.error(result.error);
         showToast("저장 실패: " + result.error.message, true);
         return;
       }
@@ -296,74 +320,62 @@
       showToast("✅ 주문이 접수되었습니다!");
     }
 
-    function setFilter(filter, btn) {
-      currentFilter = filter;
-      document.querySelectorAll("#tab-list .filter-btn").forEach(function (b) {
-        b.classList.remove("active");
-      });
-      btn.classList.add("active");
-      renderList();
-    }
-
     async function fetchActiveOrders() {
       var result = await supabaseClient
         .from("orders").select("*").eq("deleted", false)
         .order("created_at", { ascending: false });
       if (result.error) {
-        console.error(result.error);
         showToast("목록 불러오기 실패", true);
         return [];
       }
       return result.data || [];
     }
 
+    async function fetchTrashOrders() {
+      var result = await supabaseClient
+        .from("orders").select("*").eq("deleted", true)
+        .order("deleted_at", { ascending: false });
+      if (result.error) return [];
+      return result.data || [];
+    }
+
+    // ===== 공개 주문목록: 이름+사이즈만, 검색, ㄱ-ㅎ 정렬 =====
     async function renderList() {
       if (!supabaseClient) {
         document.getElementById("orderList").innerHTML = '<div class="empty">연결 필요</div>';
         return;
       }
       var orders = await fetchActiveOrders();
-      var filtered = orders;
-      if (currentFilter === "paid") filtered = orders.filter(function (o) { return o.paid; });
-      if (currentFilter === "unpaid") filtered = orders.filter(function (o) { return !o.paid; });
+      orders = sortByKoreanName(orders);
+
+      var q = (document.getElementById("listSearch").value || "").trim().toLowerCase();
+      if (q) {
+        orders = orders.filter(function (o) {
+          return (o.name || "").toLowerCase().indexOf(q) !== -1;
+        });
+      }
 
       var listEl = document.getElementById("orderList");
       var statsEl = document.getElementById("stats");
 
-      if (filtered.length === 0) {
-        listEl.innerHTML = '<div class="empty">' + (orders.length === 0 ? "아직 주문이 없습니다" : "해당 조건의 주문이 없습니다") + '</div>';
+      if (orders.length === 0) {
+        listEl.innerHTML = '<div class="empty">주문이 없습니다</div>';
       } else {
-        listEl.innerHTML = filtered.map(function (o) {
+        listEl.innerHTML = orders.map(function (o) {
           return '<div class="order-item">' +
-            '<input type="checkbox" ' + (o.paid ? "checked" : "") +
-              ' onchange="togglePaid(\'' + o.id + '\', this.checked)" />' +
             '<div class="order-info">' +
               '<div class="order-name">' + escapeHtml(o.name) + '</div>' +
-              '<div class="order-meta">사이즈 ' + o.size + ' · ' + formatTime(o.created_at) + '</div>' +
-            '</div>' +
-            '<span class="badge ' + (o.paid ? "paid" : "unpaid") + '">' +
-              (o.paid ? "입금완료" : "미입금") + '</span></div>';
+              '<div class="order-meta">사이즈 ' + o.size + '</div>' +
+            '</div></div>';
         }).join("");
       }
 
-      var paidCount = orders.filter(function (o) { return o.paid; }).length;
+      var all = await fetchActiveOrders();
       statsEl.innerHTML =
-        '<div class="stat"><div class="num">' + orders.length + '</div><div class="label">전체</div></div>' +
-        '<div class="stat"><div class="num" style="color:var(--green)">' + paidCount + '</div><div class="label">입금완료</div></div>' +
-        '<div class="stat"><div class="num" style="color:var(--red)">' + (orders.length - paidCount) + '</div><div class="label">미입금</div></div>';
+        '<div class="stat"><div class="num">' + all.length + '</div><div class="label">전체 주문</div></div>';
     }
 
-    async function togglePaid(id, checked) {
-      if (!supabaseClient) return;
-      var result = await supabaseClient.from("orders").update({ paid: checked }).eq("id", id);
-      if (result.error) {
-        showToast("업데이트 실패", true);
-        renderList();
-        return;
-      }
-      renderList();
-    }
-
+    // ===== 관리자 =====
     function adminLogin() {
       var pw = document.getElementById("adminPw").value;
       if (pw === ADMIN_PW) {
@@ -389,19 +401,13 @@
       renderAdminList();
     }
 
-    function setAdminFilter(filter, btn) {
-      adminFilter = filter;
-      document.getElementById("adminFilter-active").classList.toggle("active", filter === "active");
-      document.getElementById("adminFilter-trash").classList.toggle("active", filter === "trash");
+    function setAdminView(view, btn) {
+      adminView = view;
+      ["all", "paid", "unpaid", "trash"].forEach(function (v) {
+        var b = document.getElementById("adminFilter-" + v);
+        if (b) b.classList.toggle("active", v === view);
+      });
       renderAdminList();
-    }
-
-    async function fetchTrashOrders() {
-      var result = await supabaseClient
-        .from("orders").select("*").eq("deleted", true)
-        .order("deleted_at", { ascending: false });
-      if (result.error) return [];
-      return result.data || [];
     }
 
     async function renderAdminList() {
@@ -411,27 +417,14 @@
       }
       var listEl = document.getElementById("adminList");
       var statsEl = document.getElementById("adminStats");
+      var q = (document.getElementById("adminSearch").value || "").trim().toLowerCase();
 
-      if (adminFilter === "active") {
-        var orders = await fetchActiveOrders();
-        if (orders.length === 0) {
-          listEl.innerHTML = '<div class="empty">주문이 없습니다</div>';
-        } else {
-          listEl.innerHTML = orders.map(function (o) {
-            return '<div class="order-item">' +
-              '<div class="order-info">' +
-                '<div class="order-name">' + escapeHtml(o.name) + '</div>' +
-                '<div class="order-meta">사이즈 ' + o.size + ' · ' + formatTime(o.created_at) +
-                  ' · ' + (o.paid ? "입금완료" : "미입금") + '</div></div>' +
-              '<button type="button" class="btn btn-sm btn-danger" onclick="askDelete(\'' + o.id + '\')">삭제</button></div>';
-          }).join("");
-        }
+      if (adminView === "trash") {
         var trash = await fetchTrashOrders();
-        statsEl.innerHTML =
-          '<div class="stat"><div class="num">' + orders.length + '</div><div class="label">주문</div></div>' +
-          '<div class="stat"><div class="num">' + trash.length + '</div><div class="label">휴지통</div></div>';
-      } else {
-        var trash = await fetchTrashOrders();
+        trash = sortByKoreanName(trash);
+        if (q) trash = trash.filter(function (o) {
+          return (o.name || "").toLowerCase().indexOf(q) !== -1;
+        });
         if (trash.length === 0) {
           listEl.innerHTML = '<div class="empty">휴지통이 비어 있습니다</div>';
         } else {
@@ -439,13 +432,65 @@
             return '<div class="order-item">' +
               '<div class="order-info">' +
                 '<div class="order-name">' + escapeHtml(o.name) + '</div>' +
-                '<div class="order-meta">사이즈 ' + o.size + ' · ' + formatTime(o.created_at) + '</div></div>' +
+                '<div class="order-meta">사이즈 ' + o.size + '</div></div>' +
               '<button type="button" class="btn btn-sm btn-recover" onclick="recoverOrder(\'' + o.id + '\')">복구</button></div>';
           }).join("");
         }
         statsEl.innerHTML =
           '<div class="stat"><div class="num">' + trash.length + '</div><div class="label">휴지통</div></div>';
+        return;
       }
+
+      var orders = await fetchActiveOrders();
+      orders = sortByKoreanName(orders);
+
+      if (adminView === "paid") orders = orders.filter(function (o) { return o.paid; });
+      if (adminView === "unpaid") orders = orders.filter(function (o) { return !o.paid; });
+
+      if (q) {
+        orders = orders.filter(function (o) {
+          return (o.name || "").toLowerCase().indexOf(q) !== -1;
+        });
+      }
+
+      if (orders.length === 0) {
+        listEl.innerHTML = '<div class="empty">주문이 없습니다</div>';
+      } else {
+        listEl.innerHTML = orders.map(function (o) {
+          return '<div class="order-item">' +
+            '<input type="checkbox" ' + (o.paid ? "checked" : "") +
+              ' onchange="togglePaid(\'' + o.id + '\', this.checked)" title="입금 체크" />' +
+            '<div class="order-info">' +
+              '<div class="order-name">' + escapeHtml(o.name) + '</div>' +
+              '<div class="order-meta">사이즈 ' + o.size +
+                ' · <span class="badge ' + (o.paid ? "paid" : "unpaid") + '">' +
+                (o.paid ? "입금완료" : "미입금") + '</span></div></div>' +
+            '<div class="admin-actions">' +
+              '<button type="button" class="btn btn-sm btn-edit" onclick="openEditSize(\'' + o.id + '\', \'' + escapeHtml(o.name).replace(/'/g, "\\'") + '\', ' + o.size + ')">사이즈</button>' +
+              '<button type="button" class="btn btn-sm btn-danger" onclick="askDelete(\'' + o.id + '\')">삭제</button>' +
+            '</div></div>';
+        }).join("");
+      }
+
+      var all = await fetchActiveOrders();
+      var paidCount = all.filter(function (o) { return o.paid; }).length;
+      var trashCount = (await fetchTrashOrders()).length;
+      statsEl.innerHTML =
+        '<div class="stat"><div class="num">' + all.length + '</div><div class="label">전체</div></div>' +
+        '<div class="stat"><div class="num" style="color:var(--green)">' + paidCount + '</div><div class="label">입금</div></div>' +
+        '<div class="stat"><div class="num" style="color:var(--red)">' + (all.length - paidCount) + '</div><div class="label">미입금</div></div>' +
+        '<div class="stat"><div class="num">' + trashCount + '</div><div class="label">휴지통</div></div>';
+    }
+
+    async function togglePaid(id, checked) {
+      if (!supabaseClient) return;
+      var result = await supabaseClient.from("orders").update({ paid: checked }).eq("id", id);
+      if (result.error) {
+        showToast("업데이트 실패", true);
+        renderAdminList();
+        return;
+      }
+      renderAdminList();
     }
 
     function askDelete(id) {
@@ -488,7 +533,31 @@
       renderAdminList();
     }
 
-    // 시작
+    function openEditSize(id, name, size) {
+      pendingEditId = id;
+      document.getElementById("editSizeName").textContent = name + " 님";
+      fillSizeSelect(document.getElementById("editSizeSelect"), size);
+      document.getElementById("editSizeModal").classList.add("show");
+    }
+
+    function closeEditModal() {
+      document.getElementById("editSizeModal").classList.remove("show");
+      pendingEditId = null;
+    }
+
+    async function saveSizeEdit() {
+      if (!supabaseClient || !pendingEditId) return;
+      var newSize = parseInt(document.getElementById("editSizeSelect").value, 10);
+      var result = await supabaseClient.from("orders").update({ size: newSize }).eq("id", pendingEditId);
+      if (result.error) {
+        showToast("수정 실패", true);
+        return;
+      }
+      showToast("사이즈가 수정되었습니다");
+      closeEditModal();
+      renderAdminList();
+    }
+
     initSizeSelect();
     initSupabase();
     document.getElementById("adminPw").addEventListener("keydown", function (e) {
