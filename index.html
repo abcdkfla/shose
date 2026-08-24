@@ -4,50 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#FEE500" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>👟 신발 주문서</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --bg: #f5f5f5;
-      --card: #ffffff;
-      --kakao: #FEE500;
-      --kakao-dark: #3C1E1E;
-      --primary: #191919;
-      --green: #16a34a;
-      --red: #dc2626;
-      --orange: #ea580c;
-      --gray: #6b7280;
-      --border: #e5e7eb;
+      --bg: #f5f5f5; --card: #ffffff; --kakao: #FEE500; --kakao-dark: #3C1E1E;
+      --primary: #191919; --green: #16a34a; --red: #dc2626; --orange: #ea580c;
+      --gray: #6b7280; --border: #e5e7eb;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
-      background: var(--bg);
-      color: var(--primary);
-      line-height: 1.5;
-      min-height: 100vh;
-      padding-bottom: 40px;
+      background: var(--bg); color: var(--primary); line-height: 1.5;
+      min-height: 100vh; padding-bottom: 40px;
     }
     .account-bar {
-      background: var(--kakao);
-      color: var(--kakao-dark);
-      text-align: center;
-      padding: 14px 16px;
-      font-weight: 700;
-      font-size: 1.05rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: var(--kakao); color: var(--kakao-dark); text-align: center;
+      padding: 14px 16px; font-weight: 700; font-size: 1.05rem;
+      position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .account-bar small {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      opacity: 0.8;
-      margin-bottom: 2px;
-    }
+    .account-bar small { display: block; font-size: 0.8rem; font-weight: 600; opacity: 0.8; margin-bottom: 2px; }
     .container { max-width: 480px; margin: 0 auto; padding: 16px; }
     h1 { font-size: 1.4rem; text-align: center; margin: 16px 0 20px; }
     .tabs { display: flex; gap: 6px; margin-bottom: 20px; }
@@ -61,19 +37,13 @@
       background: var(--card); border-radius: 14px; padding: 20px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 16px;
     }
-    label {
-      display: block; font-size: 0.9rem; font-weight: 600;
-      margin-bottom: 6px; color: #374151;
-    }
+    label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: #374151; }
     input[type="text"], input[type="password"], select {
       width: 100%; padding: 14px 12px; border: 1.5px solid var(--border);
       border-radius: 10px; font-size: 1rem; margin-bottom: 16px; background: #fafafa;
     }
     input:focus, select:focus { outline: none; border-color: #3b82f6; background: white; }
-    .btn {
-      width: 100%; padding: 14px; border: none; border-radius: 10px;
-      font-size: 1rem; font-weight: 700; cursor: pointer;
-    }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:active { opacity: 0.85; }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -83,8 +53,7 @@
     .filter-row { display: flex; gap: 6px; margin-bottom: 14px; }
     .filter-btn {
       flex: 1; padding: 10px 6px; border: 1.5px solid var(--border);
-      border-radius: 8px; background: white; font-size: 0.85rem;
-      font-weight: 600; cursor: pointer;
+      border-radius: 8px; background: white; font-size: 0.85rem; font-weight: 600; cursor: pointer;
     }
     .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
     .order-item {
@@ -92,23 +61,15 @@
       padding: 14px 0; border-bottom: 1px solid var(--border);
     }
     .order-item:last-child { border-bottom: none; }
-    .order-item input[type="checkbox"] {
-      width: 22px; height: 22px; accent-color: var(--green); flex-shrink: 0;
-    }
+    .order-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--green); flex-shrink: 0; }
     .order-info { flex: 1; min-width: 0; }
     .order-name { font-weight: 700; font-size: 1rem; }
     .order-meta { font-size: 0.8rem; color: var(--gray); margin-top: 2px; }
-    .badge {
-      font-size: 0.75rem; padding: 3px 8px; border-radius: 20px;
-      font-weight: 600; flex-shrink: 0;
-    }
+    .badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 20px; font-weight: 600; flex-shrink: 0; }
     .badge.paid { background: #dcfce7; color: #166534; }
     .badge.unpaid { background: #fee2e2; color: #991b1b; }
     .stats { display: flex; gap: 10px; margin-top: 16px; }
-    .stat {
-      flex: 1; text-align: center; background: #f9fafb;
-      padding: 12px 8px; border-radius: 10px;
-    }
+    .stat { flex: 1; text-align: center; background: #f9fafb; padding: 12px 8px; border-radius: 10px; }
     .stat .num { font-size: 1.3rem; font-weight: 700; }
     .stat .label { font-size: 0.75rem; color: var(--gray); }
     .empty { text-align: center; color: var(--gray); padding: 40px 20px; font-size: 0.95rem; }
@@ -120,17 +81,15 @@
     }
     .toast.show { opacity: 1; }
     .toast.error { background: #991b1b; }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
     .login-box { text-align: center; }
     .login-box p { color: var(--gray); font-size: 0.9rem; margin-bottom: 16px; }
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-      display: flex; align-items: center; justify-content: center;
+      display: none; align-items: center; justify-content: center;
       z-index: 300; padding: 20px;
     }
-    .modal-overlay.hidden {
-      display: none !important;
-    }
+    .modal-overlay.show { display: flex; }
     .modal {
       background: white; border-radius: 16px; padding: 24px;
       max-width: 340px; width: 100%; text-align: center;
@@ -161,55 +120,50 @@
     <h1>👟 신발 주문서</h1>
 
     <div id="configWarn" class="config-warn hidden">
-      ⚠️ Supabase URL / Key가 설정되지 않았습니다.<br>
-      HTML 파일 상단 스크립트의 SUPABASE_URL, SUPABASE_ANON_KEY를 채워주세요.
+      ⚠️ Supabase URL / Key가 설정되지 않았습니다.
     </div>
 
     <div class="tabs">
-      <button class="tab active" id="tabBtn-order" onclick="showTab('order')">📝 주문하기</button>
-      <button class="tab" id="tabBtn-list" onclick="showTab('list')">📋 주문목록</button>
-      <button class="tab" id="tabBtn-admin" onclick="showTab('admin')">🔐 관리자</button>
+      <button type="button" class="tab active" id="tabBtn-order" onclick="showTab('order')">📝 주문하기</button>
+      <button type="button" class="tab" id="tabBtn-list" onclick="showTab('list')">📋 주문목록</button>
+      <button type="button" class="tab" id="tabBtn-admin" onclick="showTab('admin')">🔐 관리자</button>
     </div>
 
-    <!-- 주문하기 -->
     <div id="tab-order">
       <div class="card">
         <label for="name">이름</label>
         <input type="text" id="name" placeholder="홍길동" maxlength="20" />
-        <label for="size">신발 사이즈</label>
+        <label for="size">신발 사이즈 (mm)</label>
         <select id="size"></select>
-        <button class="btn btn-primary" id="submitBtn" onclick="submitOrder()">주문 제출하기</button>
+        <button type="button" class="btn btn-primary" id="submitBtn" onclick="submitOrder()">주문 제출하기</button>
       </div>
     </div>
 
-    <!-- 주문목록 -->
     <div id="tab-list" class="hidden">
       <div class="filter-row">
-        <button class="filter-btn active" onclick="setFilter('all', this)">전체</button>
-        <button class="filter-btn" onclick="setFilter('paid', this)">입금완료</button>
-        <button class="filter-btn" onclick="setFilter('unpaid', this)">미입금</button>
+        <button type="button" class="filter-btn active" onclick="setFilter('all', this)">전체</button>
+        <button type="button" class="filter-btn" onclick="setFilter('paid', this)">입금완료</button>
+        <button type="button" class="filter-btn" onclick="setFilter('unpaid', this)">미입금</button>
       </div>
       <div class="card" id="orderList"></div>
       <div class="stats" id="stats"></div>
     </div>
 
-    <!-- 관리자 -->
     <div id="tab-admin" class="hidden">
       <div class="card login-box" id="adminLogin">
         <p>관리자만 접근할 수 있습니다</p>
         <label for="adminPw">비밀번호</label>
         <input type="password" id="adminPw" placeholder="비밀번호 입력" />
-        <button class="btn btn-primary" onclick="adminLogin()">로그인</button>
+        <button type="button" class="btn btn-primary" onclick="adminLogin()">로그인</button>
       </div>
-
       <div id="adminPanel" class="hidden">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
           <strong>관리자 모드</strong>
-          <button class="btn btn-sm" style="background:#e5e7eb; color:#374151;" onclick="adminLogout()">로그아웃</button>
+          <button type="button" class="btn btn-sm" style="background:#e5e7eb; color:#374151;" onclick="adminLogout()">로그아웃</button>
         </div>
         <div class="filter-row">
-          <button class="filter-btn active" id="adminFilter-active" onclick="setAdminFilter('active', this)">주문 목록</button>
-          <button class="filter-btn" id="adminFilter-trash" onclick="setAdminFilter('trash', this)">휴지통</button>
+          <button type="button" class="filter-btn active" id="adminFilter-active" onclick="setAdminFilter('active', this)">주문 목록</button>
+          <button type="button" class="filter-btn" id="adminFilter-trash" onclick="setAdminFilter('trash', this)">휴지통</button>
         </div>
         <div class="card" id="adminList"></div>
         <div class="stats" id="adminStats"></div>
@@ -217,13 +171,13 @@
     </div>
   </div>
 
-  <div class="modal-overlay hidden" id="confirmModal" style="display:none;">
+  <div class="modal-overlay" id="confirmModal">
     <div class="modal">
       <h3>정말 삭제할까요?</h3>
       <p>삭제된 주문은 휴지통으로 이동됩니다.<br>나중에 복구할 수 있습니다.</p>
       <div class="modal-btns">
-        <button class="modal-cancel" onclick="closeModal()">취소</button>
-        <button class="modal-confirm" id="confirmDeleteBtn">삭제</button>
+        <button type="button" class="modal-cancel" onclick="closeModal()">취소</button>
+        <button type="button" class="modal-confirm" id="confirmDeleteBtn">삭제</button>
       </div>
     </div>
   </div>
@@ -231,37 +185,33 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // ============================================================
-    //  1) Supabase 설정 (여기만 채우세요)
-    // ============================================================
     const SUPABASE_URL = "https://bqcgpqjhbolehpmygzjn.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_t92k8pK4XBIlEn4M3c9Ahw_3WzmY7oy";
-    // ============================================================
 
-    // ============================================================
-    //  2) 사이즈 설정 (간격 바꾸려면 SIZE_STEP만 수정)
-    // ============================================================
-    const SIZE_MIN  = 200;
+    const SIZE_MIN  = 190;
     const SIZE_MAX  = 300;
     const SIZE_STEP = 5;
-    // ============================================================
 
     const ADMIN_PW = "031208";
     const ADMIN_SESSION = "shoe_admin_logged_in";
 
-    let supabase = null;
+    let supabaseClient = null;
     let currentFilter = "all";
     let adminFilter = "active";
     let pendingDeleteId = null;
 
     function initSupabase() {
-      if (!SUPABASE_URL || SUPABASE_URL.includes("YOUR_") ||
-          !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes("YOUR_")) {
-        document.getElementById("configWarn").classList.remove("hidden");
+      try {
+        if (!window.supabase || !window.supabase.createClient) {
+          console.error("supabase js not loaded");
+          return false;
+        }
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        return true;
+      } catch (e) {
+        console.error(e);
         return false;
       }
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      return true;
     }
 
     function escapeHtml(text) {
@@ -275,21 +225,19 @@
       toast.textContent = msg;
       toast.classList.toggle("error", !!isError);
       toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 2200);
+      setTimeout(function () { toast.classList.remove("show"); }, 2200);
     }
 
     function formatTime(iso) {
       if (!iso) return "";
-      try {
-        return new Date(iso).toLocaleString("ko-KR");
-      } catch { return iso; }
+      try { return new Date(iso).toLocaleString("ko-KR"); } catch (e) { return iso; }
     }
 
     function initSizeSelect() {
       const select = document.getElementById("size");
       select.innerHTML = "";
-      for (let s = SIZE_MIN; s <= SIZE_MAX; s += SIZE_STEP) {
-        const opt = document.createElement("option");
+      for (var s = SIZE_MIN; s <= SIZE_MAX; s += SIZE_STEP) {
+        var opt = document.createElement("option");
         opt.value = s;
         opt.textContent = s;
         if (s === 250) opt.selected = true;
@@ -298,9 +246,16 @@
     }
 
     function showTab(tab) {
-      ["order", "list", "admin"].forEach(t => {
-        document.getElementById("tab-" + t).classList.toggle("hidden", t !== tab);
-        document.getElementById("tabBtn-" + t).classList.toggle("active", t === tab);
+      ["order", "list", "admin"].forEach(function (t) {
+        var el = document.getElementById("tab-" + t);
+        var btn = document.getElementById("tabBtn-" + t);
+        if (t === tab) {
+          el.classList.remove("hidden");
+          btn.classList.add("active");
+        } else {
+          el.classList.add("hidden");
+          btn.classList.remove("active");
+        }
       });
       if (tab === "list") renderList();
       if (tab === "admin") {
@@ -314,80 +269,72 @@
     }
 
     async function submitOrder() {
-      if (!supabase) {
-        showToast("Supabase 설정이 필요합니다", true);
+      if (!supabaseClient) {
+        showToast("연결 실패. 새로고침 해주세요", true);
         return;
       }
-      const name = document.getElementById("name").value.trim();
-      const size = parseInt(document.getElementById("size").value, 10);
+      var name = document.getElementById("name").value.trim();
+      var size = parseInt(document.getElementById("size").value, 10);
       if (!name) {
         showToast("이름을 입력해주세요", true);
         return;
       }
-
-      const btn = document.getElementById("submitBtn");
+      var btn = document.getElementById("submitBtn");
       btn.disabled = true;
       btn.textContent = "제출 중...";
-
-      const { error } = await supabase.from("orders").insert({
-        name: name,
-        size: size,
-        paid: false,
-        deleted: false
+      var result = await supabaseClient.from("orders").insert({
+        name: name, size: size, paid: false, deleted: false
       });
-
       btn.disabled = false;
       btn.textContent = "주문 제출하기";
-
-      if (error) {
-        console.error(error);
-        showToast("저장 실패: " + error.message, true);
+      if (result.error) {
+        console.error(result.error);
+        showToast("저장 실패: " + result.error.message, true);
         return;
       }
-
       document.getElementById("name").value = "";
       showToast("✅ 주문이 접수되었습니다!");
     }
 
     function setFilter(filter, btn) {
       currentFilter = filter;
-      document.querySelectorAll("#tab-list .filter-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll("#tab-list .filter-btn").forEach(function (b) {
+        b.classList.remove("active");
+      });
       btn.classList.add("active");
       renderList();
     }
 
     async function fetchActiveOrders() {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("deleted", false)
+      var result = await supabaseClient
+        .from("orders").select("*").eq("deleted", false)
         .order("created_at", { ascending: false });
-      if (error) {
-        console.error(error);
+      if (result.error) {
+        console.error(result.error);
         showToast("목록 불러오기 실패", true);
         return [];
       }
-      return data || [];
+      return result.data || [];
     }
 
     async function renderList() {
-      if (!supabase) {
-        document.getElementById("orderList").innerHTML = '<div class="empty">Supabase 설정 필요</div>';
+      if (!supabaseClient) {
+        document.getElementById("orderList").innerHTML = '<div class="empty">연결 필요</div>';
         return;
       }
-      const orders = await fetchActiveOrders();
-      let filtered = orders;
-      if (currentFilter === "paid") filtered = orders.filter(o => o.paid);
-      if (currentFilter === "unpaid") filtered = orders.filter(o => !o.paid);
+      var orders = await fetchActiveOrders();
+      var filtered = orders;
+      if (currentFilter === "paid") filtered = orders.filter(function (o) { return o.paid; });
+      if (currentFilter === "unpaid") filtered = orders.filter(function (o) { return !o.paid; });
 
-      const listEl = document.getElementById("orderList");
-      const statsEl = document.getElementById("stats");
+      var listEl = document.getElementById("orderList");
+      var statsEl = document.getElementById("stats");
 
       if (filtered.length === 0) {
         listEl.innerHTML = '<div class="empty">' + (orders.length === 0 ? "아직 주문이 없습니다" : "해당 조건의 주문이 없습니다") + '</div>';
       } else {
-        listEl.innerHTML = filtered.map(o =>
-          '<div class="order-item">' +
+        listEl.innerHTML = filtered.map(function (o) {
+          return '<div class="order-item">' +
             '<input type="checkbox" ' + (o.paid ? "checked" : "") +
               ' onchange="togglePaid(\'' + o.id + '\', this.checked)" />' +
             '<div class="order-info">' +
@@ -395,12 +342,11 @@
               '<div class="order-meta">사이즈 ' + o.size + ' · ' + formatTime(o.created_at) + '</div>' +
             '</div>' +
             '<span class="badge ' + (o.paid ? "paid" : "unpaid") + '">' +
-              (o.paid ? "입금완료" : "미입금") + '</span>' +
-          '</div>'
-        ).join("");
+              (o.paid ? "입금완료" : "미입금") + '</span></div>';
+        }).join("");
       }
 
-      const paidCount = orders.filter(o => o.paid).length;
+      var paidCount = orders.filter(function (o) { return o.paid; }).length;
       statsEl.innerHTML =
         '<div class="stat"><div class="num">' + orders.length + '</div><div class="label">전체</div></div>' +
         '<div class="stat"><div class="num" style="color:var(--green)">' + paidCount + '</div><div class="label">입금완료</div></div>' +
@@ -408,12 +354,9 @@
     }
 
     async function togglePaid(id, checked) {
-      if (!supabase) return;
-      const { error } = await supabase
-        .from("orders")
-        .update({ paid: checked })
-        .eq("id", id);
-      if (error) {
+      if (!supabaseClient) return;
+      var result = await supabaseClient.from("orders").update({ paid: checked }).eq("id", id);
+      if (result.error) {
         showToast("업데이트 실패", true);
         renderList();
         return;
@@ -422,7 +365,7 @@
     }
 
     function adminLogin() {
-      const pw = document.getElementById("adminPw").value;
+      var pw = document.getElementById("adminPw").value;
       if (pw === ADMIN_PW) {
         sessionStorage.setItem(ADMIN_SESSION, "1");
         document.getElementById("adminPw").value = "";
@@ -454,60 +397,51 @@
     }
 
     async function fetchTrashOrders() {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("deleted", true)
+      var result = await supabaseClient
+        .from("orders").select("*").eq("deleted", true)
         .order("deleted_at", { ascending: false });
-      if (error) {
-        console.error(error);
-        return [];
-      }
-      return data || [];
+      if (result.error) return [];
+      return result.data || [];
     }
 
     async function renderAdminList() {
-      if (!supabase) {
-        document.getElementById("adminList").innerHTML = '<div class="empty">Supabase 설정 필요</div>';
+      if (!supabaseClient) {
+        document.getElementById("adminList").innerHTML = '<div class="empty">연결 필요</div>';
         return;
       }
-      const listEl = document.getElementById("adminList");
-      const statsEl = document.getElementById("adminStats");
+      var listEl = document.getElementById("adminList");
+      var statsEl = document.getElementById("adminStats");
 
       if (adminFilter === "active") {
-        const orders = await fetchActiveOrders();
+        var orders = await fetchActiveOrders();
         if (orders.length === 0) {
           listEl.innerHTML = '<div class="empty">주문이 없습니다</div>';
         } else {
-          listEl.innerHTML = orders.map(o =>
-            '<div class="order-item">' +
+          listEl.innerHTML = orders.map(function (o) {
+            return '<div class="order-item">' +
               '<div class="order-info">' +
                 '<div class="order-name">' + escapeHtml(o.name) + '</div>' +
                 '<div class="order-meta">사이즈 ' + o.size + ' · ' + formatTime(o.created_at) +
-                  ' · ' + (o.paid ? "입금완료" : "미입금") + '</div>' +
-              '</div>' +
-              '<button class="btn btn-sm btn-danger" onclick="askDelete(\'' + o.id + '\')">삭제</button>' +
-            '</div>'
-          ).join("");
+                  ' · ' + (o.paid ? "입금완료" : "미입금") + '</div></div>' +
+              '<button type="button" class="btn btn-sm btn-danger" onclick="askDelete(\'' + o.id + '\')">삭제</button></div>';
+          }).join("");
         }
-        const trash = await fetchTrashOrders();
+        var trash = await fetchTrashOrders();
         statsEl.innerHTML =
           '<div class="stat"><div class="num">' + orders.length + '</div><div class="label">주문</div></div>' +
           '<div class="stat"><div class="num">' + trash.length + '</div><div class="label">휴지통</div></div>';
       } else {
-        const trash = await fetchTrashOrders();
+        var trash = await fetchTrashOrders();
         if (trash.length === 0) {
           listEl.innerHTML = '<div class="empty">휴지통이 비어 있습니다</div>';
         } else {
-          listEl.innerHTML = trash.map(o =>
-            '<div class="order-item">' +
+          listEl.innerHTML = trash.map(function (o) {
+            return '<div class="order-item">' +
               '<div class="order-info">' +
                 '<div class="order-name">' + escapeHtml(o.name) + '</div>' +
-                '<div class="order-meta">사이즈 ' + o.size + ' · ' + formatTime(o.created_at) + '</div>' +
-              '</div>' +
-              '<button class="btn btn-sm btn-recover" onclick="recoverOrder(\'' + o.id + '\')">복구</button>' +
-            '</div>'
-          ).join("");
+                '<div class="order-meta">사이즈 ' + o.size + ' · ' + formatTime(o.created_at) + '</div></div>' +
+              '<button type="button" class="btn btn-sm btn-recover" onclick="recoverOrder(\'' + o.id + '\')">복구</button></div>';
+          }).join("");
         }
         statsEl.innerHTML =
           '<div class="stat"><div class="num">' + trash.length + '</div><div class="label">휴지통</div></div>';
@@ -516,9 +450,7 @@
 
     function askDelete(id) {
       pendingDeleteId = id;
-      var m = document.getElementById("confirmModal");
-      m.classList.remove("hidden");
-      m.style.display = "flex";
+      document.getElementById("confirmModal").classList.add("show");
       document.getElementById("confirmDeleteBtn").onclick = function () {
         doDelete(pendingDeleteId);
         closeModal();
@@ -526,22 +458,16 @@
     }
 
     function closeModal() {
-      var m = document.getElementById("confirmModal");
-      m.classList.add("hidden");
-      m.style.display = "none";
+      document.getElementById("confirmModal").classList.remove("show");
       pendingDeleteId = null;
     }
 
     async function doDelete(id) {
-      if (!supabase) return;
-      const { error } = await supabase
-        .from("orders")
-        .update({
-          deleted: true,
-          deleted_at: new Date().toISOString()
-        })
-        .eq("id", id);
-      if (error) {
+      if (!supabaseClient) return;
+      var result = await supabaseClient.from("orders").update({
+        deleted: true, deleted_at: new Date().toISOString()
+      }).eq("id", id);
+      if (result.error) {
         showToast("삭제 실패", true);
         return;
       }
@@ -550,15 +476,11 @@
     }
 
     async function recoverOrder(id) {
-      if (!supabase) return;
-      const { error } = await supabase
-        .from("orders")
-        .update({
-          deleted: false,
-          deleted_at: null
-        })
-        .eq("id", id);
-      if (error) {
+      if (!supabaseClient) return;
+      var result = await supabaseClient.from("orders").update({
+        deleted: false, deleted_at: null
+      }).eq("id", id);
+      if (result.error) {
         showToast("복구 실패", true);
         return;
       }
@@ -566,13 +488,12 @@
       renderAdminList();
     }
 
+    // 시작
     initSizeSelect();
-    const ok = initSupabase();
-    if (ok) {
-      document.getElementById("adminPw").addEventListener("keydown", function (e) {
-        if (e.key === "Enter") adminLogin();
-      });
-    }
+    initSupabase();
+    document.getElementById("adminPw").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") adminLogin();
+    });
   </script>
 </body>
 </html>
